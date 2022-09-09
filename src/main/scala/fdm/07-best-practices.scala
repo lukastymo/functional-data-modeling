@@ -1,5 +1,7 @@
 package fdm
 
+import java.time.{ Instant, LocalDateTime }
+
 /**
  * Some anti-patterns emerge when doing data modeling in Scala. Learning to spot and refactor such
  * anti-patterns is a very valuable skill that will keep data models precise and easy to maintain
@@ -40,7 +42,13 @@ object eliminate_intersection {
      * user events OR device events (but NOT both), and which permits events that have timestamps
      * or lack timestamps; but which always have event ids.
      */
-    type Event = TODO
+    final case class Event(eventId: String, eventType: EventType, timestamp: Option[java.time.Instant])
+
+    sealed trait EventType
+    object EventType {
+      final case class UserEvent(userId: String)     extends EventType
+      final case class DeviceEvent(deviceId: String) extends EventType
+    }
   }
 }
 
@@ -65,11 +73,13 @@ object extract_product {
    * introduce a new field called `eventType`, which captures event-specific details for the
    * different event types.
    */
-  sealed trait AdvertisingEvent
-  object AdvertisingEvent {
-    final case class Impression(pageUrl: String, data: String)                 extends AdvertisingEvent
-    final case class Click(pageUrl: String, elementId: String, data: String)   extends AdvertisingEvent
-    final case class Action(pageUrl: String, actionName: String, data: String) extends AdvertisingEvent
+  final case class AdvertisingEvent(pageUrl: String, data: String, eventType: EventType)
+
+  sealed trait EventType
+  object EventType {
+    case object Impression                      extends EventType
+    final case class Click(elementId: String)   extends EventType
+    final case class Action(actionName: String) extends EventType
   }
 
   /**
@@ -125,6 +135,14 @@ object extract_sum {
     employmentDate: Option[java.time.LocalDateTime], // if employed
     school: Option[Enrollment]                       // full-time student
   )
+
+  final case class Person2(name: String, personType: PersonType)
+
+  sealed trait PersonType
+  object PersonType {
+    final case class Employed(job: Job, employmentDate: Option[LocalDateTime]) extends PersonType
+    final case class Student(school: Enrollment)                               extends PersonType
+  }
 
   /**
    * EXERCISE 2
@@ -232,8 +250,8 @@ object eliminate_typecase {
    */
   def logIdentifiedEvents(event: Event): Unit =
     event match {
-      case identified: IdentifiedEvent => println("User event: " + identified.id)
-      case _                           =>
+      case Purchase(id, _) => println("User event: " + id)
+      case _               =>
     }
 
 }
@@ -257,7 +275,7 @@ object nested_shadowing {
   def count[A](list: List[A]): Int =
     list match {
       case Nil       => 0
-      case _ :: tail => 1 + count(list)
+      case _ :: list => 1 + count(list)
     }
 
   sealed trait UserBehavior
@@ -282,9 +300,9 @@ object nested_shadowing {
       case Purchase => true
       case Return   => true
       case Anything => false
-      case Sequence(first, second) =>
-        analyzePattern(first) || analyzePattern(second)
-      case Not(value) =>
+      case Sequence(b, b2) =>
+        analyzePattern(b) || analyzePattern(b2)
+      case Not(b) =>
         analyzePattern(b)
     }
 }

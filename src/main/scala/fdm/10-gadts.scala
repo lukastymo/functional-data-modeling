@@ -20,8 +20,11 @@ object gadts {
    */
   sealed trait ConversionType[A]
   object ConversionType {
-    case object ToInt extends ConversionType[Int]
+    case object ToInt    extends ConversionType[Int]
+    case object ToDouble extends ConversionType[Double]
   }
+
+  import ConversionType._
 
   /**
    * EXERCISE 2
@@ -33,7 +36,12 @@ object gadts {
    * the `convert` function.
    */
   def convert[A](string: String, conversionType: ConversionType[A]): A =
-    ???
+    conversionType match {
+      case ToInt    => string.toInt
+      case ToDouble => string.toDouble
+    }
+
+  convert("123", ConversionType.ToDouble)
 
   /**
    * EXERCISE 3

@@ -22,7 +22,10 @@ object subtyping {
    * Determine the relationship between `Animal` and `Dog`, and encode that using either
    * `IsSubtypeOf` or `IsSupertypeOf`.
    */
-  type Exercise1 = TODO
+  type E1A      = IsSubtypeOf[Dog, Animal]
+  type E1AInfix = Dog IsSubtypeOf Animal
+  type E1B      = IsSupertypeOf[Animal, Dog]
+  type E1BInfix = Animal IsSupertypeOf Dog
 
   /**
    * EXERCISE 2
@@ -58,12 +61,12 @@ object subtyping {
    * In this exercise, use the right type operator such that the examples that should compile do
    * compile, but the examples that should not compile do not compile.
    */
-  def isInstanceOf[A, B](a: A): Unit = ???
+  def isInstanceOf[A, B >: A](a: A): Unit = ???
 
-  lazy val mustCompile1    = isInstanceOf[Ripley.type, Dog](Ripley)
-  lazy val mustCompile2    = isInstanceOf[Midnight.type, Cat](Midnight)
-  lazy val mustNotCompile1 = isInstanceOf[Ripley.type, Cat](Ripley)
-  lazy val mustNotCompile2 = isInstanceOf[Midnight.type, Dog](Midnight)
+  lazy val mustCompile1 = isInstanceOf[Ripley.type, Dog](Ripley)
+  lazy val mustCompile2 = isInstanceOf[Midnight.type, Cat](Midnight)
+//  lazy val mustNotCompile1 = isInstanceOf[Ripley.type, Cat](Ripley)
+//  lazy val mustNotCompile2 = isInstanceOf[Midnight.type, Dog](Midnight)
 
   /**
    * EXERCISE 6

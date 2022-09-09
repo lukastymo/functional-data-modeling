@@ -38,13 +38,38 @@ object smart_constructors {
 
 object applied_smart_constructors {
 
+  sealed trait DomainError
+
+  object DomainError {
+    final case class ValidationFailed(why: String) extends DomainError
+  }
+  import DomainError._
+
+  type ErrorOr[A] = Either[DomainError, A]
+
   /**
    * EXERCISE 1
    *
    * Identify the weaknesses in this data type, and use smart constructors (and possibly other
    * techniques) to correct them.
    */
-  final case class BankAccount(id: String, name: String, balance: Double, opened: java.time.Instant)
+  final case class BankAccount(id: AccountId, name: String, balance: Double, opened: java.time.Instant)
+
+  sealed abstract case class AccountId private (value: String)
+  object AccountId {
+    def validId(id: String): ErrorOr[AccountId] =
+      Either.cond(id.nonEmpty, new AccountId(id) {}, ValidationFailed("wrong id"))
+  }
+  sealed abstract case class Name private (value: String)
+  sealed trait Balance
+  object Balance {
+    sealed abstract case class USD(dollars: Long) extends Balance
+  }
+
+  object BankAccount {
+
+    def make(id: String, name: String, balance: Long) = ???
+  }
 
   /**
    * EXERCISE 2

@@ -11,7 +11,10 @@ object special_types {
    * Find a type existing in the Scala standard library, which we will call `One`, which has a
    * single "inhabitant" (i.e. there exists a single unique value that has this type).
    */
-  type One = TODO
+  type One = Unit
+
+  case object Foo
+  type One2 = Foo.type
 
   /**
    * EXERCISE 2
@@ -19,7 +22,7 @@ object special_types {
    * Find a type existing in the Scala standard library, which we will call `Zero`, which has no
    * "inhabitants" (i.e. there exists no values of this type).
    */
-  type Zero = TODO
+  type Zero = Nothing
 
   /**
    * EXERCISE 3
@@ -28,7 +31,19 @@ object special_types {
    * change the return type of this function to whatever type you like, then try to explain why
    * this rule in the Scala compiler will not lead to any crashes of your application.
    */
-  def nothingIsAnything(value: Nothing): Nothing = value
+  def nothingIsAnything(value: Nothing): Int = value
+  def giveMeNothing: Nothing                 = ???
+  nothingIsAnything(giveMeNothing)
+
+  trait V {
+    def to[A]: A
+  }
+  val aa = new V {
+    def to[A]: A = ???
+  }
+
+  def hello(v: V): Int = 5
+  hello(aa)
 }
 
 /**
@@ -50,8 +65,13 @@ object algebra {
    * equivalence is called an "isomorphism", and it can be regarded as a weaker but more useful
    * definition of equality.
    */
-  def toBA[A, B](ab: (A, B)): (B, A) = TODO
-  def toAB[A, B](ba: (B, A)): (A, B) = TODO
+  def toBA[A, B](ab: (A, B)): (B, A) = ab match {
+    case (a, b) => (b, a)
+  }
+
+  def toAB[A, B](ba: (B, A)): (A, B) = ba match {
+    case (b, a) => (a, b)
+  }
 
   def roundtripAB[A, B](t: (A, B)): (A, B) = toAB(toBA(t))
   def roundtripBA[A, B](t: (B, A)): (B, A) = toBA(toAB(t))
@@ -65,8 +85,8 @@ object algebra {
    * Although the eithers Either[A, B] and Either[B, A] are not exactly the s;ame, they are
    * isomorphic, as with tuples.
    */
-  def toBA[A, B](ab: Either[A, B]): Either[B, A] = TODO
-  def toAB[A, B](ba: Either[B, A]): Either[A, B] = TODO
+  def toBA[A, B](ab: Either[A, B]): Either[B, A] = ab.swap
+  def toAB[A, B](ba: Either[B, A]): Either[A, B] = ba.swap
 
   def roundtripAB[A, B](t: Either[A, B]): Either[A, B] = toAB(toBA(t))
   def roundtripBA[A, B](t: Either[B, A]): Either[B, A] = toBA(toAB(t))
@@ -87,8 +107,8 @@ object algebra {
    *
    * As with multiplication of numbers, we also have `A + 0` is the same as `A`.
    */
-  def withNothing[A](v: A): Either[A, Nothing]    = TODO
-  def withoutNothing[A](v: Either[A, Nothing]): A = TODO
+  def withNothing[A](v: A): Either[A, Nothing]    = Left(v)
+  def withoutNothing[A](v: Either[A, Nothing]): A = v.swap.getOrElse(???)
 
   def roundtripNothing1[A](v: A): A                                   = withoutNothing(withNothing(v))
   def roundtripNothing2[A](t: Either[A, Nothing]): Either[A, Nothing] = withNothing(withoutNothing(t))
@@ -134,7 +154,7 @@ object algebra_of_types {
    * Create a polymorphic data type whose algebraic definition is `A * B`. Hint: You can use
    * `Tuple2` or create your own version of this data type.
    */
-  type ATimesB
+  type ATimesB[A, B] = (A, B)
 
   /**
    * EXERCISE 2
@@ -142,7 +162,7 @@ object algebra_of_types {
    * Create a polymorphic data type whose algebraic definition is `A + B`. Hint: You can use
    * `Either` or create your own version of this data type.
    */
-  type APlusB
+  type APlusB[A, B] = Either[A, B]
 
   /**
    * EXERCISE 3
